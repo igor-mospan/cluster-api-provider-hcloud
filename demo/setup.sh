@@ -6,8 +6,13 @@ set -x
 
 kind create cluster --name capi-hetzner || true
 
-# Install cluster api manager
-kubectl apply -f https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.2.8/cluster-api-components.yaml
+# Install cert-manager
+kubectl create namespace cert-manager --dry-run -o yaml | kubectl apply -f -
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v0.13.1/cert-manager.yaml
 
-# Install kubeadm bootstrap provider
-kubectl apply -f https://github.com/kubernetes-sigs/cluster-api-bootstrap-provider-kubeadm/releases/download/v0.1.5/bootstrap-components.yaml
+# Install cluster api components
+kubectl apply \
+  -f https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.0-rc.3/core-components.yaml \
+  -f https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.0-rc.3/cluster-api-components.yaml \
+  -f https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.0-rc.3/control-plane-components.yaml \
+  -f https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.0-rc.3/bootstrap-components.yaml
