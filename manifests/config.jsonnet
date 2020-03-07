@@ -3,6 +3,32 @@ local hcloudCloudControllerManager = import 'hcloud-cloud-controller-manager/hcl
 local hcloudCSI = import 'hcloud-csi/hcloud-csi.libsonnet';
 local hcloudIPFloater = import 'hcloud-ip-floater/hcloud-ip-floater.libsonnet';
 local metricsServer = import 'metrics-server/metrics-server.libsonnet';
+local apiServerKeepalived = (import 'kube-keepalived-vip/kube-keepalived-vip.libsonnet') {
+  _config+:: {
+    name: 'kube-apiserver-keepalived-vip',
+    serviceBackend: 'default/kubernetes',
+  },
+  daemonSet+: {
+    spec+: {
+      template+: {
+        spec+: {
+          nodeSelector+: {
+            'node-role.kubernetes.io/master': '',
+          },
+          tolerations+: [
+            {
+              key: 'CriticalAddonsOnly',
+              operator: 'Exists',
+            },
+            {
+              operator: 'Exists',
+            },
+          ],
+        },
+      },
+    },
+  },
+};
 
 {
   _config:: {
@@ -47,6 +73,7 @@ local metricsServer = import 'metrics-server/metrics-server.libsonnet';
     hcloudCSI +
     hcloudIPFloater +
     metricsServer +
+    apiServerKeepalived +
     {
       _config+:: $._config,
     },
